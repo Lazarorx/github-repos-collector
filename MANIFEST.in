@@ -1,0 +1,28 @@
+# Include documentation
+include README.md
+include LICENSE
+include CONTRIBUTING.md
+include GITHUB_READY.md
+include pytest.ini
+include pyproject.toml
+
+# Include all documentation files
+recursive-include docs *.md *.txt
+
+# Include tests
+recursive-include tests *.py
+
+# Include workflows
+recursive-include .github *.yml
+
+# Exclude compiled files
+global-exclude *.py[cod]
+global-exclude __pycache__
+global-exclude *.so
+global-exclude .DS_Store
+
+# Exclude cache and exports
+prune cache
+prune exports
+prune htmlcov
+prune .pytest_cache

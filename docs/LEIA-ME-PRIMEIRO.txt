@@ -1,0 +1,128 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║                                                                      ║
+║              🎉 BEM-VINDO AO GITHUB REPOS COLLECTOR v2.0! 🎉        ║
+║                                                                      ║
+║         Ferramenta Profissional para Coletar Repositórios           ║
+║                      do GitHub com Facilidade                        ║
+║                                                                      ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+
+🚀 INÍCIO RÁPIDO (3 PASSOS)
+═══════════════════════════════════════════════════════════════════════
+
+WINDOWS (Mais Fácil):
+  1. Clique duplo em "instalar.bat" (só uma vez)
+  2. Clique duplo em "iniciar.bat"
+  3. Siga o menu interativo!
+
+QUALQUER SISTEMA:
+  1. pip install -r requirements.txt
+  2. python app.py
+  3. Siga o menu interativo!
+
+
+📚 DOCUMENTAÇÃO
+═══════════════════════════════════════════════════════════════════════
+
+Escolha o arquivo certo para você:
+
+  📖 INDEX.md                  → Índice completo (COMECE AQUI!)
+  📖 COMECE_AQUI.md           → Início rápido (2 minutos)
+  📖 GUIA_RAPIDO.md           → Tutorial completo (10 minutos)
+  📖 EXEMPLOS.md              → 10 casos de uso práticos
+  📖 README.md                → Documentação técnica completa
+  📖 APRESENTACAO.md          → Apresentação visual do projeto
+  📖 RESUMO_EXECUTIVO.md      → Para gestores e líderes
+  📖 TESTE_RAPIDO.md          → Guia de testes
+  📖 CHANGELOG.md             → O que mudou na v2.0
+
+
+✨ FUNCIONALIDADES PRINCIPAIS
+═══════════════════════════════════════════════════════════════════════
+
+  ✅ Menu Interativo Amigável
+     → Não precisa saber comandos de terminal!
+  
+  ✅ Exportação para Excel (CSV)
+     → Abra os dados diretamente no Excel
+  
+  ✅ Exportação para JSON
+     → Para análise programática
+  
+  ✅ Filtros Avançados
+     → Por data (últimos X dias)
+     → Por estrelas (mínimo de estrelas)
+  
+  ✅ Sistema de Cache
+     → Resultados salvos para consultas rápidas
+  
+  ✅ Interface Colorida
+     → Visual agradável e fácil de usar
+
+
+🎯 EXEMPLOS RÁPIDOS
+═══════════════════════════════════════════════════════════════════════
+
+Modo Interativo (Recomendado):
+  python app.py
+
+Busca Simples:
+  python app.py --linguagem=Python --exportar=csv
+
+Com Filtros:
+  python app.py --linguagem=JavaScript --dias=7 --min-estrelas=100
+
+Busca Completa:
+  python app.py --linguagem=Rust --num-paginas=5 --exportar=ambos
+
+
+📁 ESTRUTURA DO PROJETO
+═══════════════════════════════════════════════════════════════════════
+
+  github-repos-collector/
+  ├── app.py                    # Aplicação principal
+  ├── requirements.txt          # Dependências
+  ├── instalar.bat             # Instalador Windows
+  ├── iniciar.bat              # Iniciador Windows
+  ├── INDEX.md                 # Índice de documentação
+  ├── COMECE_AQUI.md          # Início rápido
+  ├── GUIA_RAPIDO.md          # Tutorial completo
+  ├── EXEMPLOS.md             # Casos de uso
+  ├── README.md               # Documentação principal
+  ├── cache/                  # Cache (criado automaticamente)
+  └── exports/                # Exportações (criado automaticamente)
+
+
+💡 PARA QUEM É ESTE PROJETO?
+═══════════════════════════════════════════════════════════════════════
+
+  ✅ Recrutadores → Encontrar desenvolvedores talentosos
+  ✅ Desenvolvedores → Descobrir novos projetos
+  ✅ Pesquisadores → Coletar dados para análise
+  ✅ Gerentes → Avaliar ferramentas e frameworks
+  ✅ Estudantes → Encontrar projetos para estudar
+
+
+🆘 PRECISA DE AJUDA?
+═══════════════════════════════════════════════════════════════════════
+
+  1. Leia INDEX.md para encontrar a documentação certa
+  2. Consulte GUIA_RAPIDO.md para problemas comuns
+  3. Veja EXEMPLOS.md para casos de uso práticos
+  4. Abra uma issue no GitHub
+
+
+🎉 PRÓXIMOS PASSOS
+═══════════════════════════════════════════════════════════════════════
+
+  1. Leia INDEX.md (2 minutos)
+  2. Execute: python app.py
+  3. Experimente o menu interativo
+  4. Exporte seus primeiros dados!
+
+
+═══════════════════════════════════════════════════════════════════════
+  Desenvolvido com ❤️ - Janeiro 2026
+  Versão 2.0.0 - Todas as funcionalidades implementadas!
+═══════════════════════════════════════════════════════════════════════

@@ -1,82 +1,186 @@
-# github-repos-collector
+# 🔍 GitHub Repos Collector
 
-Este código coleta informações sobre repositórios no GitHub. Ele pode ser usado para coletar repositórios de qualquer tipo, incluindo repositórios de linguagem, IA, machine learning, back-end, front-end e outros.
+[![Python Version](https://img.shields.io/badge/python-3.7+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Tests](https://github.com/yourusername/github-repos-collector/workflows/Tests/badge.svg)](https://github.com/yourusername/github-repos-collector/actions)
+[![Lint](https://github.com/yourusername/github-repos-collector/workflows/Lint/badge.svg)](https://github.com/yourusername/github-repos-collector/actions)
+[![codecov](https://codecov.io/gh/yourusername/github-repos-collector/branch/main/graph/badge.svg)](https://codecov.io/gh/yourusername/github-repos-collector)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-O código é dividido em quatro módulos principais:
+A powerful and user-friendly tool to collect, filter, and export GitHub repository information.
 
-* converter_data() e formatar_data(): Esses módulos convertem strings de data para objetos datetime e vice-versa.
-* exibir_info_repositorio(): Esse módulo exibe informações formatadas de um repositório.
-* coletar_repositorios(): Esse módulo coleta informações sobre repositórios.
-* main(): Esse módulo é o ponto de entrada do código. Ele coleta informações sobre repositórios e exibe essas informações.
+## ✨ Features
 
-**Configuração do logging**
+- 🎨 **Interactive Menu** - No command-line knowledge required
+- 📊 **Multiple Export Formats** - CSV (Excel-ready) and JSON
+- 🔍 **Advanced Filters** - Filter by date, stars, and more
+- 💾 **Smart Caching** - Avoid repeated API calls
+- 🌈 **Colorful Interface** - Beautiful terminal UI
+- 🚀 **Fast & Efficient** - Collect hundreds of repos in seconds
 
-O código usa o módulo `logging` para registrar mensagens de log. O nível de registro padrão é `INFO`, o que significa que apenas mensagens informativas serão registradas.
+## 🚀 Quick Start
 
-**Função `converter_data()`**
+### Installation
 
-A função `converter_data()` converte uma string de data para um objeto datetime. A string de data deve estar no formato `YYYY-MM-DDTHH:mm:ssZ`.
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/github-repos-collector.git
+cd github-repos-collector
 
-**Função `formatar_data()`**
-
-A função `formatar_data()` converte um objeto datetime em uma string mais legível. A string retornada está no formato `YYYY-MM-DD HH:mm:ss`.
-
-**Função `exibir_info_repositorio()`**
-
-A função `exibir_info_repositorio()` exibe informações formatadas de um repositório. As informações exibidas são:
-
-* Nome do repositório
-* Número de estrelas
-* Número de forks
-* Link para o repositório
-* Data de criação
-* Data de atualização
-
-**Função `coletar_repositorios()`**
-
-A função `coletar_repositorios()` coleta informações sobre repositórios. A função recebe dois parâmetros:
-
-* `config`: Um dicionário que contém configurações específicas para o tipo de repositório.
-* `num_paginas`: O número de páginas a serem consultadas.
-
-A função faz uma solicitação HTTP para a API do GitHub. A resposta da API é convertida para formato JSON. A função itera sobre os repositórios no JSON e armazena as informações de cada repositório em uma lista.
-
-**Função `main()`**
-
-A função `main()` é o ponto de entrada do código. Ela recebe quatro parâmetros:
-
-* `tipo_repositorio`: O tipo de repositório no GitHub.
-* `ordenacao`: O critério de ordenação dos repositórios.
-* `linguagem`: A linguagem de programação desejada.
-* `num_paginas`: O número de páginas a serem consultadas.
-
-A função configura as opções de acordo com os parâmetros recebidos. Em seguida, ela chama a função `coletar_repositorios()` para coletar informações sobre os repositórios. Por fim, ela chama a função `exibir_info_repositorio()` para exibir as informações dos repositórios.
-
-**Exemplo de uso**
-
-Para usar o código, você pode executar o seguinte comando:
-
-```
-python coletar_repositorios.py --tipo-repositorio=linguagem --ordenacao=stars --linguagem=python
+# Install dependencies
+pip install -r requirements.txt
 ```
 
-Este comando coletará informações sobre os repositórios Python mais populares no GitHub. As informações serão exibidas no console.
+### Usage
 
-**Outras opções**
+#### Interactive Mode (Recommended)
 
-O código pode ser modificado para coletar informações sobre outros tipos de repositórios. Para isso, você precisará alterar o valor do parâmetro `tipo_repositorio`.
+Simply run without arguments:
 
-O código também pode ser modificado para personalizar a ordenação dos repositórios. Para isso, você precisará alterar o valor do parâmetro `ordenacao`. As opções disponíveis são:
+```bash
+python app.py
+```
 
-* `stars`: Ordena os repositórios pelo número de estrelas.
-* `forks`: Ordena os repositórios pelo número de forks.
-* `updated`: Ordena os repositórios pela data de atualização.
+The program will guide you through:
+1. Choose programming language
+2. Select sorting criteria
+3. Set number of pages to fetch
+4. Apply filters (optional)
+5. Export results
 
-Você também pode alterar o número de páginas a serem consultadas. Para isso, você precisará alterar o valor do parâmetro `num_paginas`.
+#### Command Line Mode
 
-**Cache**
-Os resultados da busca são armazenados em cache no arquivo cache_repositorios.json para evitar chamadas frequentes à API do GitHub.
+```bash
+# Basic search
+python app.py --linguagem=Python --num-paginas=2
 
-**Contribuição**
-Contribuições são bem-vindas! Sinta-se à vontade para abrir (issues) e enviar pull requests para melhorar este projeto.
+# With filters
+python app.py --linguagem=JavaScript --dias=7 --min-estrelas=100
 
+# With export
+python app.py --linguagem=Python --exportar=csv --usar-cache
+```
+
+## 📖 Documentation
+
+- 🇧🇷 **Portuguese Documentation**: See [docs/](docs/) folder for complete documentation in Portuguese
+- 📚 **Quick Start Guide**: [docs/COMECE_AQUI.md](docs/COMECE_AQUI.md)
+- 📝 **Examples**: [docs/EXEMPLOS.md](docs/EXEMPLOS.md)
+- 📋 **Changelog**: [docs/CHANGELOG.md](docs/CHANGELOG.md)
+
+## 🎯 Use Cases
+
+### For Recruiters
+Find popular projects in specific languages and export to Excel for analysis.
+
+```bash
+python app.py --linguagem=Python --ordenacao=stars --exportar=csv
+```
+
+### For Developers
+Discover recent and trending projects.
+
+```bash
+python app.py --linguagem=Rust --dias=30 --min-estrelas=500
+```
+
+### For Researchers
+Collect large datasets for analysis.
+
+```bash
+python app.py --linguagem=Python --num-paginas=10 --exportar=ambos
+```
+
+## 📊 Command Line Options
+
+| Option | Description | Example |
+|--------|-------------|---------|
+| `--linguagem` | Programming language | `--linguagem=Python` |
+| `--ordenacao` | Sort criteria (stars/forks/updated) | `--ordenacao=stars` |
+| `--num-paginas` | Number of pages (~30 repos per page) | `--num-paginas=3` |
+| `--dias` | Filter repos created in last X days | `--dias=7` |
+| `--min-estrelas` | Minimum number of stars | `--min-estrelas=100` |
+| `--exportar` | Export format (csv/json/ambos) | `--exportar=csv` |
+| `--usar-cache` | Use cached data | `--usar-cache` |
+| `-i, --interativo` | Interactive menu mode | `-i` |
+
+## 📁 Project Structure
+
+```
+github-repos-collector/
+├── app.py                 # Main application
+├── requirements.txt       # Python dependencies
+├── LICENSE               # MIT License
+├── README.md             # This file
+├── .gitignore           # Git ignore rules
+├── cache/               # Cached results (auto-created)
+├── exports/             # Exported files (auto-created)
+└── docs/                # Documentation (Portuguese)
+    ├── COMECE_AQUI.md
+    ├── GUIA_RAPIDO.md
+    ├── EXEMPLOS.md
+    └── ...
+```
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+### Running Tests
+
+```bash
+# Install test dependencies
+pip install -r requirements.txt
+
+# Run tests
+pytest
+
+# Run tests with coverage
+pytest --cov=app --cov-report=html
+
+# View coverage report
+# Open htmlcov/index.html in your browser
+```
+
+### Code Quality
+
+This project uses:
+- **pytest** for testing
+- **black** for code formatting
+- **flake8** for linting
+- **isort** for import sorting
+
+```bash
+# Format code
+black app.py tests/
+
+# Check linting
+flake8 app.py
+
+# Sort imports
+isort app.py tests/
+```
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- Built with [Click](https://click.palletsprojects.com/) for CLI interface
+- Uses [GitHub REST API](https://docs.github.com/en/rest) for data collection
+- Inspired by the need for easy repository discovery
+
+## 📧 Contact
+
+For questions or suggestions, please open an issue on GitHub.
+
+---
+
+**Made with ❤️ by the community**
