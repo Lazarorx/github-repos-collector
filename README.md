@@ -17,9 +17,10 @@ A powerful and user-friendly tool to collect, filter, and export GitHub reposito
 - 💾 **Smart Caching** - Avoid repeated API calls
 - 🌈 **Colorful Interface** - Beautiful terminal UI
 - 🚀 **Fast & Efficient** - Collect hundreds of repos in seconds
-- 📈 **Progress Bars** - Real-time feedback with visual progress indicators (NEW in v2.1.0)
-- ⏱️ **Time Estimates** - Know exactly how long operations will take (NEW in v2.1.0)
-- 🔔 **Rate Limit Monitoring** - Track GitHub API usage in real-time (NEW in v2.1.0)
+- 📈 **Progress Bars** - Real-time feedback with visual progress indicators
+- ⏱️ **Time Estimates** - Know exactly how long operations will take
+- 🔔 **Rate Limit Monitoring** - Track GitHub API usage in real-time
+- 🔑 **GitHub Authentication** - 5000 req/hour with token (vs 60 without) (NEW in v2.2.0)
 
 ## 🚀 Quick Start
 
@@ -55,13 +56,19 @@ The program will guide you through:
 
 ```bash
 # Basic search
-python app.py --linguagem=Python --num-paginas=2
+python app.py search --linguagem=Python --num-paginas=2
 
 # With filters
-python app.py --linguagem=JavaScript --dias=7 --min-estrelas=100
+python app.py search --linguagem=JavaScript --dias=7 --min-estrelas=100
 
 # With export
-python app.py --linguagem=Python --exportar=csv --usar-cache
+python app.py search --linguagem=Python --exportar=csv --usar-cache
+
+# Configure GitHub token (5000 req/hour)
+python app.py config set-token ghp_xxxxxxxxxxxxxxxxxxxx
+
+# Check authentication status
+python app.py auth-status
 ```
 
 ## 📖 Documentation

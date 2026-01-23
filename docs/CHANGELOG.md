@@ -2,6 +2,55 @@
 
 Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
+## [2.2.0] - 2026-01-23
+
+### ✨ Novas Funcionalidades
+
+#### 🔑 Autenticação GitHub
+- **Suporte a Personal Access Token**: Configure token para aumentar rate limit
+  - Rate limit: 60 → 5000 requisições/hora (83x mais!)
+  - Suporte via variável de ambiente `GITHUB_TOKEN`
+  - Suporte via arquivo de configuração `~/.grc/config.json`
+- **Comandos de configuração**:
+  - `python app.py config set-token` - Configurar token
+  - `python app.py config show-token` - Mostrar token (mascarado)
+  - `python app.py config remove-token` - Remover token
+  - `python app.py config status` - Ver status de autenticação
+  - `python app.py auth-status` - Atalho para ver status
+- **Feedback visual**: Mostra status de autenticação durante busca
+  - 🔑 Autenticado: Sim (5000 req/hora)
+  - ⚠️ Autenticado: Não (60 req/hora)
+- **Armazenamento seguro**: Token salvo com permissões restritas (0600)
+
+#### 🎨 Melhorias de UX
+- **Estrutura de comandos**: Migrado para Click groups
+  - `python app.py search` - Buscar repositórios
+  - `python app.py config` - Gerenciar configurações
+  - `python app.py auth-status` - Ver autenticação
+- **Mensagens informativas**: Dicas sobre como configurar token
+- **Validação de token**: Aviso se token não parece válido
+
+### 🔧 Melhorias Técnicas
+- **Headers de autenticação**: Requisições incluem token quando disponível
+- **Detecção automática**: Busca token em múltiplas fontes (env, config)
+- **Ordem de prioridade**: Variável de ambiente > Arquivo de configuração
+- **Diretório de configuração**: `~/.grc/` criado automaticamente
+- **Rate limit expandido**: Captura `X-RateLimit-Limit` dos headers
+
+### 📚 Documentação
+- **docs/AUTHENTICATION.md**: Guia completo sobre autenticação
+  - Como criar token no GitHub
+  - Métodos de configuração
+  - Comandos disponíveis
+  - Troubleshooting
+  - Casos de uso (CI/CD, scripts, etc.)
+
+### 🐛 Correções
+- Melhor tratamento de erros de autenticação
+- Mensagens mais claras sobre rate limit
+
+---
+
 ## [2.1.0] - 2026-01-22
 
 ### ✨ Novas Funcionalidades

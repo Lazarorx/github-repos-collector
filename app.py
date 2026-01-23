@@ -6,7 +6,7 @@ import csv
 import json
 import os
 from pathlib import Path
-from typing import List, Dict, Optional, Any
+from typing import List, Dict, Optional, Any, Tuple
 from tqdm import tqdm
 import time
 
@@ -17,8 +17,107 @@ logger = logging.getLogger(__name__)
 # Diretório para cache e exportações
 CACHE_DIR = Path("cache")
 EXPORT_DIR = Path("exports")
+CONFIG_DIR = Path.home() / ".grc"
 CACHE_DIR.mkdir(exist_ok=True)
 EXPORT_DIR.mkdir(exist_ok=True)
+CONFIG_DIR.mkdir(exist_ok=True)
+
+# Arquivo de configuração
+CONFIG_FILE = CONFIG_DIR / "config.json"
+
+
+def get_github_token() -> Optional[str]:
+    """Obtém o token do GitHub de várias fontes.
+    
+    Ordem de prioridade:
+    1. Variável de ambiente GITHUB_TOKEN
+    2. Arquivo de configuração ~/.grc/config.json
+    
+    Returns:
+        Token do GitHub ou None se não encontrado.
+    """
+    # 1. Variável de ambiente
+    token = os.environ.get('GITHUB_TOKEN')
+    if token:
+        return token
+    
+    # 2. Arquivo de configuração
+    if CONFIG_FILE.exists():
+        try:
+            with open(CONFIG_FILE, 'r') as f:
+                config = json.load(f)
+                return config.get('github_token')
+        except Exception as e:
+            logger.warning(f"Erro ao ler configuração: {e}")
+    
+    return None
+
+
+def save_github_token(token: str) -> None:
+    """Salva o token do GitHub no arquivo de configuração.
+    
+    Args:
+        token: Token do GitHub para salvar.
+    """
+    config = {}
+    if CONFIG_FILE.exists():
+        try:
+            with open(CONFIG_FILE, 'r') as f:
+                config = json.load(f)
+        except:
+            pass
+    
+    config['github_token'] = token
+    
+    with open(CONFIG_FILE, 'w') as f:
+        json.dump(config, f, indent=2)
+    
+    # Proteger o arquivo (apenas leitura/escrita pelo usuário)
+    try:
+        os.chmod(CONFIG_FILE, 0o600)
+    except:
+        pass  # Windows pode não suportar chmod
+
+
+def get_auth_headers() -> Tuple[Dict[str, str], bool]:
+    """Obtém os headers de autenticação para a API do GitHub.
+    
+    Returns:
+        Tupla com (headers, is_authenticated)
+    """
+    token = get_github_token()
+    
+    if token:
+        return {
+            'Authorization': f'token {token}',
+            'Accept': 'application/vnd.github.v3+json'
+        }, True
+    else:
+        return {
+            'Accept': 'application/vnd.github.v3+json'
+        }, False
+
+
+def show_auth_status() -> None:
+    """Mostra o status de autenticação."""
+    token = get_github_token()
+    
+    if token:
+        # Mascarar token (mostrar apenas primeiros e últimos 4 caracteres)
+        masked = f"{token[:4]}...{token[-4:]}" if len(token) > 8 else "****"
+        click.secho("🔑 Autenticação: Ativa", fg='green', bold=True)
+        click.echo(f"   Token: {masked}")
+        click.echo(f"   Rate Limit: 5000 requisições/hora")
+    else:
+        click.secho("⚠️  Autenticação: Não configurada", fg='yellow', bold=True)
+        click.echo(f"   Rate Limit: 60 requisições/hora")
+        click.echo()
+        click.echo("💡 Dica: Configure um token para aumentar o rate limit:")
+        click.echo("   1. Crie um token em: https://github.com/settings/tokens")
+        click.echo("   2. Configure com: export GITHUB_TOKEN='seu_token'")
+        click.echo("   3. Ou use: python app.py config set-token seu_token")
+    
+    click.echo()
 
 def converter_data(data_str: str) -> datetime:
     """Converte uma string de data para um objeto datetime.
@@ -225,6 +324,9 @@ def coletar_repositorios(config: Dict[str, Any], num_paginas: Optional[int] = No
     Returns:
         Lista de repositórios coletados.
     """
+    # Obtém headers de autenticação
+    headers, is_authenticated = get_auth_headers()
+    
     # Tenta carregar do cache se solicitado
     if usar_cache and linguagem:
         click.echo("🔍 Verificando cache...", nl=False)
@@ -243,6 +345,13 @@ def coletar_repositorios(config: Dict[str, Any], num_paginas: Optional[int] = No
     click.echo(f"   Linguagem: {linguagem or 'N/A'}")
     click.echo(f"   Páginas: {paginas}")
     click.echo(f"   Repositórios esperados: ~{paginas * 30}")
+    
+    # Mostra status de autenticação
+    if is_authenticated:
+        click.secho(f"   🔑 Autenticado: Sim (5000 req/hora)", fg='green')
+    else:
+        click.secho(f"   ⚠️  Autenticado: Não (60 req/hora)", fg='yellow')
+    
     click.echo()
 
     try:
@@ -258,9 +367,13 @@ def coletar_repositorios(config: Dict[str, Any], num_paginas: Optional[int] = No
                 pbar.set_description(f"🔄 Coletando página {pagina}/{paginas}")
                 
                 try:
-                    # Faz a solicitação HTTP
+                    # Faz a solicitação HTTP com autenticação
                     inicio = time.time()
-                    response = requests.get(config['github_api_url'], params=config['query_params'])
+                    response = requests.get(
+                        config['github_api_url'], 
+                        params=config['query_params'],
+                        headers=headers
+                    )
                     tempo_resposta = time.time() - inicio
                     
                     response.raise_for_status()  # Lança uma exceção para erros HTTP
@@ -271,6 +384,7 @@ def coletar_repositorios(config: Dict[str, Any], num_paginas: Optional[int] = No
                     # Verifica rate limit
                     rate_limit_remaining = response.headers.get('X-RateLimit-Remaining', 'N/A')
                     rate_limit_reset = response.headers.get('X-RateLimit-Reset', 'N/A')
+                    rate_limit_limit = response.headers.get('X-RateLimit-Limit', 'N/A')
                     
                     # Itera sobre os repositórios
                     repos_pagina = []
@@ -464,7 +578,16 @@ def menu_interativo() -> None:
     click.secho("✓ Processo concluído!", fg='green', bold=True)
     click.secho("=" * 60, fg='cyan')
 
-@click.command()
+@click.group(invoke_without_command=True)
+@click.pass_context
+def cli(ctx):
+    """Coletor de Repositórios do GitHub - Versão Melhorada"""
+    if ctx.invoked_subcommand is None:
+        # Se nenhum subcomando, executa o comportamento padrão
+        ctx.invoke(search)
+
+
+@cli.command()
 @click.option('--interativo', '-i', is_flag=True, help='Modo interativo com menu amigável')
 @click.option(
     '--tipo-repositorio',
@@ -506,8 +629,8 @@ def menu_interativo() -> None:
     is_flag=True,
     help='Usar dados em cache se disponível.'
 )
-def main(interativo, tipo_repositorio, ordenacao, linguagem, num_paginas, dias, min_estrelas, exportar, usar_cache):
-    """Coletor de Repositórios do GitHub - Versão Melhorada"""
+def search(interativo, tipo_repositorio, ordenacao, linguagem, num_paginas, dias, min_estrelas, exportar, usar_cache):
+    """Buscar repositórios do GitHub"""
     
     # Se modo interativo ou nenhum parâmetro fornecido, usa o menu
     if interativo or not linguagem:
@@ -551,5 +674,90 @@ def main(interativo, tipo_repositorio, ordenacao, linguagem, num_paginas, dias, 
     except Exception as e:
         logger.error(f"Erro inesperado: {e}")
 
+
+@cli.group()
+def config():
+    """Gerenciar configurações do GitHub Repos Collector"""
+    pass
+
+
+@config.command('set-token')
+@click.argument('token')
+def set_token(token):
+    """Configurar token do GitHub
+    
+    Exemplo: python app.py config set-token ghp_xxxxxxxxxxxx
+    """
+    if not token.startswith('ghp_') and not token.startswith('github_pat_'):
+        click.secho("⚠️  Aviso: O token não parece ser um token válido do GitHub", fg='yellow')
+        if not click.confirm('Deseja continuar mesmo assim?'):
+            return
+    
+    save_github_token(token)
+    click.secho("✅ Token configurado com sucesso!", fg='green', bold=True)
+    click.echo(f"   Arquivo: {CONFIG_FILE}")
+    click.echo()
+    click.echo("💡 O token foi salvo de forma segura.")
+    click.echo("   Agora você tem 5000 requisições/hora!")
+
+
+@config.command('show-token')
+def show_token_cmd():
+    """Mostrar token configurado (mascarado)"""
+    token = get_github_token()
+    
+    if token:
+        masked = f"{token[:4]}...{token[-4:]}" if len(token) > 8 else "****"
+        click.secho("🔑 Token Configurado:", fg='green', bold=True)
+        click.echo(f"   Token: {masked}")
+        click.echo(f"   Arquivo: {CONFIG_FILE}")
+    else:
+        click.secho("⚠️  Nenhum token configurado", fg='yellow', bold=True)
+        click.echo()
+        click.echo("Configure um token com:")
+        click.echo("   python app.py config set-token SEU_TOKEN")
+
+
+@config.command('remove-token')
+def remove_token():
+    """Remover token configurado"""
+    if not CONFIG_FILE.exists():
+        click.secho("⚠️  Nenhum token configurado", fg='yellow')
+        return
+    
+    if click.confirm('Tem certeza que deseja remover o token?'):
+        try:
+            config_data = {}
+            with open(CONFIG_FILE, 'r') as f:
+                config_data = json.load(f)
+            
+            if 'github_token' in config_data:
+                del config_data['github_token']
+                
+                if config_data:
+                    with open(CONFIG_FILE, 'w') as f:
+                        json.dump(config_data, f, indent=2)
+                else:
+                    CONFIG_FILE.unlink()
+                
+                click.secho("✅ Token removido com sucesso!", fg='green', bold=True)
+            else:
+                click.secho("⚠️  Nenhum token encontrado", fg='yellow')
+        except Exception as e:
+            click.secho(f"❌ Erro ao remover token: {e}", fg='red')
+
+
+@config.command('status')
+def status():
+    """Mostrar status de autenticação"""
+    show_auth_status()
+
+
+@cli.command()
+def auth_status():
+    """Verificar status de autenticação"""
+    show_auth_status()
+
+
 if __name__ == '__main__':
-    main()
+    cli()
