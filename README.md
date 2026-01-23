@@ -22,7 +22,9 @@ A powerful and user-friendly tool to collect, filter, and export GitHub reposito
 - 🔔 **Rate Limit Monitoring** - Track GitHub API usage in real-time
 - 🔑 **GitHub Authentication** - 5000 req/hour with token (vs 60 without)
 - 📋 **Formatted Tables** - Beautiful tables with Rich library
-- 📊 **Statistics Dashboard** - Automatic insights and highlights (NEW in v2.4.0)
+- 📊 **Statistics Dashboard** - Automatic insights and highlights
+- 📈 **Distribution Charts** - Visual distribution of stars (NEW in v2.5.0)
+- 🔄 **Language Comparison** - Compare multiple languages side-by-side (NEW in v2.5.0)
 
 ## 🚀 Quick Start
 
@@ -71,6 +73,12 @@ python app.py config set-token ghp_xxxxxxxxxxxxxxxxxxxx
 
 # Check authentication status
 python app.py auth-status
+
+# Compare multiple languages
+python app.py compare Python JavaScript Go Rust
+
+# Compare with more data
+python app.py compare TypeScript Java --num-paginas=2
 ```
 
 ## 📖 Documentation

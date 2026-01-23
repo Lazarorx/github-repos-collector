@@ -2,6 +2,92 @@
 
 Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
+## [2.5.0] - 2026-01-23
+
+### ✨ Novas Funcionalidades
+
+#### 📊 Gráfico de Distribuição de Estrelas
+- **Visualização automática**: Gráfico de barras ASCII após o dashboard
+  - Distribuição inteligente em faixas (0-10k, 10k-50k, 50k-100k, 100k+)
+  - Faixas adaptativas baseadas no máximo de estrelas
+  - Barras proporcionais ao número de repositórios
+  - Percentual de cada faixa
+  - Cores vibrantes (cyan para labels, yellow para barras)
+- **Análise visual**: Entenda a distribuição de popularidade rapidamente
+  - Identifique concentração de repositórios
+  - Veja padrões de distribuição
+  - Compare faixas de popularidade
+
+#### 🔄 Comparação entre Linguagens
+- **Novo comando `compare`**: Compare estatísticas de múltiplas linguagens
+  - Sintaxe: `python app.py compare Python JavaScript Go`
+  - Suporta 2 ou mais linguagens simultaneamente
+  - Usa cache automaticamente para velocidade
+- **Tabela comparativa**: Visão lado a lado
+  - Total de repositórios por linguagem
+  - Total de estrelas acumuladas
+  - Média de estrelas por repositório
+  - Total de forks
+  - Média de forks
+  - Repositório mais popular de cada linguagem
+- **Gráfico de comparação**: Barras horizontais
+  - Visualização de estrelas totais
+  - Barras proporcionais entre linguagens
+  - Ordenação automática (mais popular primeiro)
+- **Resumo inteligente**: Destaques da comparação
+  - 🏆 Linguagem com mais estrelas totais
+  - 📊 Linguagem com mais repositórios
+  - 📈 Linguagem com maior média de estrelas
+
+#### 🎨 Melhorias Visuais
+- **Painéis coloridos**: Cada seção com cor específica
+  - Magenta para distribuição
+  - Yellow para comparação de estrelas
+  - Green para resumo
+- **Formatação consistente**: Números com separador de milhares
+- **Emojis contextuais**: Ícones para cada métrica
+- **Layout responsivo**: Adapta ao tamanho do terminal
+
+### 🔧 Melhorias Técnicas
+- **Função exibir_grafico_distribuicao()**: Gráfico de distribuição
+  - Cálculo automático de faixas
+  - Adaptação baseada em max_estrelas
+  - Barras ASCII proporcionais
+- **Comando compare**: Comparação entre linguagens
+  - Coleta paralela de dados
+  - Reutilização de cache
+  - Ordenação por popularidade
+  - Cálculos agregados automáticos
+- **Integração automática**: Gráfico exibido após dashboard
+- **Validação de entrada**: Mínimo 2 linguagens para comparar
+
+### 📚 Melhorias de UX
+- **Insights visuais**: Entenda dados em segundos
+- **Comparação facilitada**: Veja diferenças entre linguagens
+- **Análise de distribuição**: Identifique padrões
+- **Feedback completo**: Tabela + Dashboard + Gráfico + Comparação
+- **Uso intuitivo**: Comandos simples e diretos
+
+### 🐛 Correções
+- Tratamento de listas com menos de 5 repositórios
+- Validação de entrada no comando compare
+- Melhor formatação de números grandes
+
+### 📖 Exemplos de Uso
+
+```bash
+# Ver distribuição de estrelas
+python app.py search --linguagem Python --num-paginas 1
+
+# Comparar 3 linguagens
+python app.py compare Python JavaScript Go
+
+# Comparar com mais páginas
+python app.py compare Rust TypeScript --num-paginas 2
+```
+
+---
+
 ## [2.4.0] - 2026-01-23
 
 ### ✨ Novas Funcionalidades

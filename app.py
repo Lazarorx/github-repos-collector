@@ -14,6 +14,7 @@ from rich.table import Table
 from rich.panel import Panel
 from rich.text import Text
 from rich import box
+from rich.columns import Columns
 
 # Configuração do logging
 logging.basicConfig(level=logging.INFO)
@@ -234,6 +235,74 @@ def exibir_dashboard_estatisticas(repositorios: List[Dict[str, Any]]) -> None:
     console.print()
 
 
+def exibir_grafico_distribuicao(repositorios: List[Dict[str, Any]]) -> None:
+    """Exibe gráfico de distribuição de estrelas e forks.
+    
+    Args:
+        repositorios: Lista de repositórios.
+    """
+    if not repositorios or len(repositorios) < 5:
+        return
+    
+    # Criar faixas de distribuição para estrelas
+    max_estrelas = max(r['estrelas'] for r in repositorios)
+    
+    # Definir faixas inteligentes
+    if max_estrelas > 100000:
+        faixas = [
+            (0, 10000, "0-10k"),
+            (10000, 50000, "10k-50k"),
+            (50000, 100000, "50k-100k"),
+            (100000, float('inf'), "100k+")
+        ]
+    elif max_estrelas > 10000:
+        faixas = [
+            (0, 1000, "0-1k"),
+            (1000, 5000, "1k-5k"),
+            (5000, 10000, "5k-10k"),
+            (10000, float('inf'), "10k+")
+        ]
+    else:
+        faixas = [
+            (0, 100, "0-100"),
+            (100, 500, "100-500"),
+            (500, 1000, "500-1k"),
+            (1000, float('inf'), "1k+")
+        ]
+    
+    # Contar repositórios em cada faixa
+    distribuicao = {label: 0 for _, _, label in faixas}
+    for repo in repositorios:
+        estrelas = repo['estrelas']
+        for min_val, max_val, label in faixas:
+            if min_val <= estrelas < max_val:
+                distribuicao[label] += 1
+                break
+    
+    # Criar gráfico de barras ASCII
+    max_count = max(distribuicao.values()) if distribuicao.values() else 1
+    bar_width = 40
+    
+    grafico_texto = ""
+    for label, count in distribuicao.items():
+        if count > 0:
+            bar_length = int((count / max_count) * bar_width)
+            bar = "█" * bar_length
+            percentage = (count / len(repositorios)) * 100
+            grafico_texto += f"[cyan]{label:>10}[/cyan] │ [yellow]{bar}[/yellow] [white]{count}[/white] [dim]({percentage:.1f}%)[/dim]\n"
+    
+    # Criar painel de distribuição
+    painel_distribuicao = Panel(
+        grafico_texto.rstrip(),
+        title="[bold magenta]📊 DISTRIBUIÇÃO DE ESTRELAS[/bold magenta]",
+        border_style="magenta",
+        padding=(1, 2)
+    )
+    
+    console.print(painel_distribuicao)
+    console.print()
+
+
 def exibir_repositorios_tabela(repositorios: List[Dict[str, Any]], titulo: str = "🔍 Repositórios Encontrados", 
                                 mostrar_dashboard: bool = True) -> None:
     """Exibe repositórios em uma tabela formatada.
@@ -296,6 +365,7 @@ def exibir_repositorios_tabela(repositorios: List[Dict[str, Any]], titulo: str =
     # Exibir dashboard se solicitado
     if mostrar_dashboard:
         exibir_dashboard_estatisticas(repositorios)
+        exibir_grafico_distribuicao(repositorios)
 
 def filtrar_por_data(repositorios: List[Dict[str, Any]], dias: Optional[int] = None) -> List[Dict[str, Any]]:
     """Filtra repositórios criados nos últimos X dias.
@@ -897,6 +967,141 @@ def status():
 def auth_status():
     """Verificar status de autenticação"""
     show_auth_status()
+
+
+@cli.command()
+@click.argument('linguagens', nargs=-1, required=True)
+@click.option('--num-paginas', type=int, default=1, help='Número de páginas por linguagem')
+def compare(linguagens, num_paginas):
+    """Comparar estatísticas entre múltiplas linguagens
+    
+    Exemplo: python app.py compare Python JavaScript Rust
+    """
+    if len(linguagens) < 2:
+        click.secho("⚠️  Forneça pelo menos 2 linguagens para comparar", fg='yellow', bold=True)
+        return
+    
+    click.echo()
+    click.secho("=" * 70, fg='cyan')
+    click.secho("    COMPARAÇÃO ENTRE LINGUAGENS", fg='cyan', bold=True)
+    click.secho("=" * 70, fg='cyan')
+    click.echo()
+    
+    # Coletar dados de cada linguagem
+    dados_linguagens = {}
+    
+    for linguagem in linguagens:
+        click.secho(f"📊 Coletando dados de {linguagem}...", fg='yellow', bold=True)
+        
+        config = {
+            'github_api_url': 'https://api.github.com/search/repositories',
+            'query_params': {
+                'q': f'language:{linguagem}',
+                'sort': 'stars',
+                'page': '1'
+            }
+        }
+        
+        # Coleta repositórios (usa cache se disponível)
+        repositorios = coletar_repositorios(config, num_paginas, usar_cache=True, linguagem=linguagem)
+        
+        if repositorios:
+            dados_linguagens[linguagem] = {
+                'repositorios': repositorios,
+                'total': len(repositorios),
+                'total_estrelas': sum(r['estrelas'] for r in repositorios),
+                'total_forks': sum(r['forks'] for r in repositorios),
+                'media_estrelas': sum(r['estrelas'] for r in repositorios) // len(repositorios),
+                'media_forks': sum(r['forks'] for r in repositorios) // len(repositorios),
+                'mais_popular': max(repositorios, key=lambda x: x['estrelas'])
+            }
+        else:
+            click.secho(f"⚠️  Nenhum repositório encontrado para {linguagem}", fg='yellow')
+        
+        click.echo()
+    
+    if not dados_linguagens:
+        click.secho("❌ Nenhum dado coletado para comparação", fg='red', bold=True)
+        return
+    
+    # Criar tabela de comparação
+    table = Table(
+        title="📊 Comparação entre Linguagens",
+        box=box.ROUNDED,
+        show_header=True,
+        header_style="bold cyan",
+        title_style="bold magenta",
+        border_style="blue"
+    )
+    
+    # Adicionar colunas
+    table.add_column("Linguagem", style="cyan bold", width=15)
+    table.add_column("Repos", style="white", justify="right", width=8)
+    table.add_column("⭐ Total", style="yellow", justify="right", width=12)
+    table.add_column("⭐ Média", style="yellow", justify="right", width=12)
+    table.add_column("🔀 Total", style="green", justify="right", width=12)
+    table.add_column("🔀 Média", style="green", justify="right", width=12)
+    table.add_column("🏆 Mais Popular", style="magenta", width=20)
+    
+    # Adicionar linhas
+    for linguagem, dados in sorted(dados_linguagens.items(), key=lambda x: x[1]['total_estrelas'], reverse=True):
+        table.add_row(
+            linguagem,
+            str(dados['total']),
+            f"{dados['total_estrelas']:,}".replace(',', '.'),
+            f"{dados['media_estrelas']:,}".replace(',', '.'),
+            f"{dados['total_forks']:,}".replace(',', '.'),
+            f"{dados['media_forks']:,}".replace(',', '.'),
+            dados['mais_popular']['nome'][:18]
+        )
+    
+    # Exibir tabela
+    console.print()
+    console.print(table)
+    console.print()
+    
+    # Criar gráfico de comparação
+    max_estrelas = max(d['total_estrelas'] for d in dados_linguagens.values())
+    bar_width = 50
+    
+    grafico_texto = ""
+    for linguagem, dados in sorted(dados_linguagens.items(), key=lambda x: x[1]['total_estrelas'], reverse=True):
+        bar_length = int((dados['total_estrelas'] / max_estrelas) * bar_width)
+        bar = "█" * bar_length
+        grafico_texto += f"[cyan]{linguagem:>15}[/cyan] │ [yellow]{bar}[/yellow] [white]{dados['total_estrelas']:,}[/white] ⭐\n".replace(',', '.')
+    
+    painel_comparacao = Panel(
+        grafico_texto.rstrip(),
+        title="[bold yellow]⭐ COMPARAÇÃO DE ESTRELAS TOTAIS[/bold yellow]",
+        border_style="yellow",
+        padding=(1, 2)
+    )
+    
+    console.print(painel_comparacao)
+    console.print()
+    
+    # Resumo
+    linguagem_mais_popular = max(dados_linguagens.items(), key=lambda x: x[1]['total_estrelas'])
+    linguagem_mais_repos = max(dados_linguagens.items(), key=lambda x: x[1]['total'])
+    linguagem_maior_media = max(dados_linguagens.items(), key=lambda x: x[1]['media_estrelas'])
+    
+    resumo = f"""[yellow]🏆 Mais Estrelas:[/yellow] [bold cyan]{linguagem_mais_popular[0]}[/bold cyan] ({linguagem_mais_popular[1]['total_estrelas']:,} ⭐)
+[green]📊 Mais Repositórios:[/green] [bold cyan]{linguagem_mais_repos[0]}[/bold cyan] ({linguagem_mais_repos[1]['total']} repos)
+[magenta]📈 Maior Média:[/magenta] [bold cyan]{linguagem_maior_media[0]}[/bold cyan] ({linguagem_maior_media[1]['media_estrelas']:,} ⭐/repo)""".replace(',', '.')
+    
+    painel_resumo = Panel(
+        resumo,
+        title="[bold green]🎯 RESUMO DA COMPARAÇÃO[/bold green]",
+        border_style="green",
+        padding=(1, 2)
+    )
+    
+    console.print(painel_resumo)
+    console.print()
+    
+    click.secho("=" * 70, fg='cyan')
+    click.secho("✓ Comparação concluída!", fg='green', bold=True)
+    click.secho("=" * 70, fg='cyan')
 
 
 if __name__ == '__main__':
