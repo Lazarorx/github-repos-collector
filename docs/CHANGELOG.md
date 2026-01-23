@@ -2,6 +2,71 @@
 
 Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
+## [2.1.0] - 2026-01-22
+
+### ✨ Novas Funcionalidades
+
+#### 📊 Progress Bars e Feedback Visual
+- **Progress bar na coleta**: Barra de progresso visual durante a busca de repositórios
+  - Mostra página atual / total
+  - Tempo decorrido e estimado
+  - Número de repositórios coletados
+  - Tempo de resposta da API
+- **Monitoramento de Rate Limit**: Exibe requisições restantes do GitHub API
+  - Alerta quando poucas requisições restam (< 10)
+  - Mostra quando rate limit é atingido
+  - Exibe horário de reset do limite
+- **Feedback de Cache**: Indicação visual ao carregar/salvar cache
+  - Mensagem de sucesso ao encontrar cache
+  - Indicação quando cache não existe
+  - Contador de repositórios carregados
+- **Feedback de Filtros**: Estatísticas de filtragem
+  - Mostra quantidade antes/depois/removidos
+  - Feedback visual para cada filtro aplicado
+- **Feedback de Exportação**: Detalhes dos arquivos exportados
+  - Nome do arquivo gerado
+  - Número de repositórios exportados
+  - Tamanho do arquivo em KB
+- **Progress bar na escrita**: Para grandes volumes de dados
+  - Barra de progresso ao escrever CSV
+  - Indicação visual de conclusão
+
+#### 🎨 Melhorias de UX
+- **Informações iniciais**: Resumo da busca antes de iniciar
+  - Linguagem selecionada
+  - Número de páginas
+  - Repositórios esperados (~30 por página)
+- **Emojis contextuais**: Ícones para cada tipo de operação
+  - 🔄 Coleta em andamento
+  - ✅ Operação concluída
+  - ⚠️ Avisos importantes
+  - 💾 Operações de cache
+  - 📄 Operações de arquivo
+- **Cores organizadas**: Output colorido e estruturado
+  - Verde para sucessos
+  - Amarelo para avisos
+  - Vermelho para erros
+  - Cyan para informações
+
+### 🔧 Melhorias Técnicas
+- **Dependência tqdm**: Adicionada biblioteca para progress bars
+- **Monitoramento de API**: Captura headers de rate limit
+- **Delay entre requisições**: Pequeno delay (0.5s) para não sobrecarregar API
+- **Tratamento de erros melhorado**: Mensagens mais claras para rate limit
+
+### 📚 Documentação
+- **docs/PROGRESS_BAR.md**: Guia completo sobre progress bars
+  - Exemplos de uso
+  - Detalhes técnicos
+  - Comparação antes/depois
+  - Troubleshooting
+
+### 🐛 Correções
+- Melhor tratamento de erro 403 (rate limit)
+- Feedback mais claro quando não há repositórios para exportar
+
+---
+
 ## [2.0.0] - 2026-01-20
 
 ### ✨ Novas Funcionalidades

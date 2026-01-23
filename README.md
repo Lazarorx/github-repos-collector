@@ -17,6 +17,9 @@ A powerful and user-friendly tool to collect, filter, and export GitHub reposito
 - 💾 **Smart Caching** - Avoid repeated API calls
 - 🌈 **Colorful Interface** - Beautiful terminal UI
 - 🚀 **Fast & Efficient** - Collect hundreds of repos in seconds
+- 📈 **Progress Bars** - Real-time feedback with visual progress indicators (NEW in v2.1.0)
+- ⏱️ **Time Estimates** - Know exactly how long operations will take (NEW in v2.1.0)
+- 🔔 **Rate Limit Monitoring** - Track GitHub API usage in real-time (NEW in v2.1.0)
 
 ## 🚀 Quick Start
 

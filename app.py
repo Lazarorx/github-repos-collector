@@ -7,6 +7,8 @@ import json
 import os
 from pathlib import Path
 from typing import List, Dict, Optional, Any
+from tqdm import tqdm
+import time
 
 # Configuração do logging
 logging.basicConfig(level=logging.INFO)
@@ -66,6 +68,8 @@ def filtrar_por_data(repositorios: List[Dict[str, Any]], dias: Optional[int] = N
     if not dias:
         return repositorios
     
+    click.echo(f"🔍 Aplicando filtro de data (últimos {dias} dias)...", nl=False)
+    
     data_limite = datetime.now() - timedelta(days=dias)
     repositorios_filtrados = []
     
@@ -73,6 +77,13 @@ def filtrar_por_data(repositorios: List[Dict[str, Any]], dias: Optional[int] = N
         data_criacao = datetime.strptime(repo['data_criacao'], '%Y-%m-%d %H:%M:%S')
         if data_criacao >= data_limite:
             repositorios_filtrados.append(repo)
+    
+    antes = len(repositorios)
+    depois = len(repositorios_filtrados)
+    removidos = antes - depois
+    
+    click.echo(f" ✓")
+    click.echo(f"   Antes: {antes} | Depois: {depois} | Removidos: {removidos}")
     
     return repositorios_filtrados
 
@@ -89,7 +100,17 @@ def filtrar_por_estrelas(repositorios: List[Dict[str, Any]], min_estrelas: Optio
     if not min_estrelas:
         return repositorios
     
-    return [repo for repo in repositorios if repo['estrelas'] >= min_estrelas]
+    click.echo(f"⭐ Aplicando filtro de estrelas (mínimo: {min_estrelas})...", nl=False)
+    
+    antes = len(repositorios)
+    repositorios_filtrados = [repo for repo in repositorios if repo['estrelas'] >= min_estrelas]
+    depois = len(repositorios_filtrados)
+    removidos = antes - depois
+    
+    click.echo(f" ✓")
+    click.echo(f"   Antes: {antes} | Depois: {depois} | Removidos: {removidos}")
+    
+    return repositorios_filtrados
 
 def salvar_cache(repositorios: List[Dict[str, Any]], linguagem: str) -> None:
     """Salva os repositórios em cache.
@@ -134,19 +155,30 @@ def exportar_csv(repositorios: List[Dict[str, Any]], linguagem: str) -> Optional
         Path do arquivo criado ou None se não houver repositórios.
     """
     if not repositorios:
-        logger.warning("Nenhum repositório para exportar.")
+        click.secho("⚠️  Nenhum repositório para exportar.", fg='yellow')
         return
     
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     filename = EXPORT_DIR / f"repos_{linguagem}_{timestamp}.csv"
     
+    click.echo()
+    click.echo("📄 Exportando para CSV...", nl=False)
+    
     with open(filename, 'w', newline='', encoding='utf-8-sig') as f:
         writer = csv.DictWriter(f, fieldnames=['nome', 'estrelas', 'forks', 'link', 'data_criacao', 'data_atualizacao'])
         writer.writeheader()
-        writer.writerows(repositorios)
+        
+        # Progress bar para escrita
+        for repo in tqdm(repositorios, desc="   Escrevendo", unit="repo", 
+                        leave=False, bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt}'):
+            writer.writerow(repo)
     
-    logger.info(f"✓ Dados exportados para CSV: {filename}")
-    logger.info(f"  Total de repositórios: {len(repositorios)}")
+    click.echo(" ✓")
+    click.secho(f"✅ CSV exportado com sucesso!", fg='green', bold=True)
+    click.echo(f"   Arquivo: {filename}")
+    click.echo(f"   Repositórios: {len(repositorios)}")
+    click.echo(f"   Tamanho: {filename.stat().st_size / 1024:.2f} KB")
+    
     return filename
 
 def exportar_json(repositorios: List[Dict[str, Any]], linguagem: str) -> Optional[Path]:
@@ -160,17 +192,24 @@ def exportar_json(repositorios: List[Dict[str, Any]], linguagem: str) -> Optiona
         Path do arquivo criado ou None se não houver repositórios.
     """
     if not repositorios:
-        logger.warning("Nenhum repositório para exportar.")
+        click.secho("⚠️  Nenhum repositório para exportar.", fg='yellow')
         return
     
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     filename = EXPORT_DIR / f"repos_{linguagem}_{timestamp}.json"
     
+    click.echo()
+    click.echo("📄 Exportando para JSON...", nl=False)
+    
     with open(filename, 'w', encoding='utf-8') as f:
         json.dump(repositorios, f, ensure_ascii=False, indent=2)
     
-    logger.info(f"✓ Dados exportados para JSON: {filename}")
-    logger.info(f"  Total de repositórios: {len(repositorios)}")
+    click.echo(" ✓")
+    click.secho(f"✅ JSON exportado com sucesso!", fg='green', bold=True)
+    click.echo(f"   Arquivo: {filename}")
+    click.echo(f"   Repositórios: {len(repositorios)}")
+    click.echo(f"   Tamanho: {filename.stat().st_size / 1024:.2f} KB")
+    
     return filename
 
 def coletar_repositorios(config: Dict[str, Any], num_paginas: Optional[int] = None, 
@@ -188,49 +227,118 @@ def coletar_repositorios(config: Dict[str, Any], num_paginas: Optional[int] = No
     """
     # Tenta carregar do cache se solicitado
     if usar_cache and linguagem:
+        click.echo("🔍 Verificando cache...", nl=False)
         cached = carregar_cache(linguagem)
         if cached:
+            click.echo(f" ✓ Cache encontrado! {len(cached)} repositórios carregados.")
             return cached
+        click.echo(" ✗ Cache não encontrado. Buscando na API...")
     
     repositorios = []  # Lista para armazenar os repositórios coletados
+    paginas = int(num_paginas) if num_paginas else 1
+    
+    # Informações iniciais
+    click.echo()
+    click.secho("📊 Informações da Busca:", fg='cyan', bold=True)
+    click.echo(f"   Linguagem: {linguagem or 'N/A'}")
+    click.echo(f"   Páginas: {paginas}")
+    click.echo(f"   Repositórios esperados: ~{paginas * 30}")
+    click.echo()
 
     try:
-        paginas = int(num_paginas) if num_paginas else 1
-        for pagina in range(1, paginas + 1):
-            config['query_params']['page'] = str(pagina)
+        # Progress bar para coleta de páginas
+        with tqdm(total=paginas, desc="🔄 Coletando páginas", 
+                  unit="página", colour="green", 
+                  bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}]') as pbar:
             
-            # Faz a solicitação HTTP
-            response = requests.get(config['github_api_url'], params=config['query_params'])
-            response.raise_for_status()  # Lança uma exceção para erros HTTP
+            for pagina in range(1, paginas + 1):
+                config['query_params']['page'] = str(pagina)
+                
+                # Atualiza descrição com página atual
+                pbar.set_description(f"🔄 Coletando página {pagina}/{paginas}")
+                
+                try:
+                    # Faz a solicitação HTTP
+                    inicio = time.time()
+                    response = requests.get(config['github_api_url'], params=config['query_params'])
+                    tempo_resposta = time.time() - inicio
+                    
+                    response.raise_for_status()  # Lança uma exceção para erros HTTP
 
-            # Converte a resposta para formato JSON
-            data = response.json()
+                    # Converte a resposta para formato JSON
+                    data = response.json()
+                    
+                    # Verifica rate limit
+                    rate_limit_remaining = response.headers.get('X-RateLimit-Remaining', 'N/A')
+                    rate_limit_reset = response.headers.get('X-RateLimit-Reset', 'N/A')
+                    
+                    # Itera sobre os repositórios
+                    repos_pagina = []
+                    for repo in data['items']:
+                        nome = repo['name']
+                        estrelas = repo['stargazers_count']
+                        forks = repo['forks']
+                        link = repo['html_url']
+                        data_criacao = converter_data(repo['created_at'])
+                        data_atualizacao = converter_data(repo['updated_at'])
 
-            # Itera sobre os repositórios
-            for repo in data['items']:
-                nome = repo['name']
-                estrelas = repo['stargazers_count']
-                forks = repo['forks']
-                link = repo['html_url']
-                data_criacao = converter_data(repo['created_at'])
-                data_atualizacao = converter_data(repo['updated_at'])
-
-                repositorios.append({
-                    'nome': nome,
-                    'estrelas': estrelas,
-                    'forks': forks,
-                    'link': link,
-                    'data_criacao': formatar_data(data_criacao),
-                    'data_atualizacao': formatar_data(data_atualizacao)
-                })
-            
-            logger.info(f"Página {pagina}/{paginas} coletada - {len(data['items'])} repositórios")
+                        repos_pagina.append({
+                            'nome': nome,
+                            'estrelas': estrelas,
+                            'forks': forks,
+                            'link': link,
+                            'data_criacao': formatar_data(data_criacao),
+                            'data_atualizacao': formatar_data(data_atualizacao)
+                        })
+                    
+                    repositorios.extend(repos_pagina)
+                    
+                    # Atualiza postfix com informações
+                    pbar.set_postfix({
+                        'repos': len(repositorios),
+                        'tempo': f'{tempo_resposta:.2f}s',
+                        'rate_limit': rate_limit_remaining
+                    })
+                    
+                    # Atualiza progress bar
+                    pbar.update(1)
+                    
+                    # Pequeno delay para não sobrecarregar a API
+                    if pagina < paginas:
+                        time.sleep(0.5)
+                
+                except requests.exceptions.HTTPError as e:
+                    if e.response.status_code == 403:
+                        click.echo()
+                        click.secho("⚠️  Rate limit atingido!", fg='yellow', bold=True)
+                        click.echo(f"   Aguarde até: {datetime.fromtimestamp(int(rate_limit_reset))}")
+                        break
+                    else:
+                        raise
+        
+        # Resumo final
+        click.echo()
+        click.secho("✅ Coleta Concluída!", fg='green', bold=True)
+        click.echo(f"   Total de repositórios: {len(repositorios)}")
+        click.echo(f"   Páginas processadas: {min(pagina, paginas)}/{paginas}")
+        
+        # Mostra rate limit final
+        if rate_limit_remaining != 'N/A':
+            click.echo(f"   Requisições restantes: {rate_limit_remaining}")
+            if int(rate_limit_remaining) < 10:
+                click.secho(f"   ⚠️  Atenção: Poucas requisições restantes!", fg='yellow')
+        
+        click.echo()
 
         # Salva no cache
-        if linguagem:
+        if linguagem and repositorios:
+            click.echo("💾 Salvando no cache...", nl=False)
             salvar_cache(repositorios, linguagem)
+            click.echo(" ✓")
 
     except requests.exceptions.RequestException as e:
+        click.echo()
+        click.secho(f"❌ Erro ao fazer a solicitação HTTP: {e}", fg='red', bold=True)
         logger.error(f"Erro ao fazer a solicitação HTTP: {e}")
 
     return repositorios

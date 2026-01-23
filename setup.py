@@ -20,6 +20,7 @@ setup(
     install_requires=[
         'requests>=2.31.0',
         'click>=8.1.7',
+        'tqdm>=4.66.0',
     ],
     extras_require={
         'dev': [
