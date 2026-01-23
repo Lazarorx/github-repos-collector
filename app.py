@@ -163,12 +163,85 @@ def exibir_info_repositorio(repo: Dict[str, Any]) -> None:
     logger.info(f"Criado em: {repo['data_criacao']}, Atualizado em: {repo['data_atualizacao']}\n")
 
 
-def exibir_repositorios_tabela(repositorios: List[Dict[str, Any]], titulo: str = "🔍 Repositórios Encontrados") -> None:
+def exibir_dashboard_estatisticas(repositorios: List[Dict[str, Any]]) -> None:
+    """Exibe dashboard com estatísticas dos repositórios.
+    
+    Args:
+        repositorios: Lista de repositórios.
+    """
+    if not repositorios:
+        return
+    
+    # Calcular estatísticas
+    total = len(repositorios)
+    total_estrelas = sum(r['estrelas'] for r in repositorios)
+    total_forks = sum(r['forks'] for r in repositorios)
+    media_estrelas = total_estrelas // total if total > 0 else 0
+    media_forks = total_forks // total if total > 0 else 0
+    
+    # Encontrar mais popular
+    mais_popular = max(repositorios, key=lambda x: x['estrelas'])
+    
+    # Encontrar mais recente (por data de criação)
+    repos_ordenados = sorted(repositorios, key=lambda x: x['data_criacao'], reverse=True)
+    mais_recente = repos_ordenados[0]
+    
+    # Encontrar mais forks
+    mais_forks = max(repositorios, key=lambda x: x['forks'])
+    
+    # Criar painel de estatísticas
+    from rich.columns import Columns
+    from rich.panel import Panel
+    
+    # Estatísticas gerais
+    stats_geral = f"""[cyan]📊 Total de Repositórios:[/cyan] [bold white]{total}[/bold white]
+[yellow]⭐ Total de Estrelas:[/yellow] [bold white]{total_estrelas:,}[/bold white]
+[green]🔀 Total de Forks:[/green] [bold white]{total_forks:,}[/bold white]
+[magenta]📈 Média de Estrelas:[/magenta] [bold white]{media_estrelas:,}[/bold white]
+[blue]📊 Média de Forks:[/blue] [bold white]{media_forks:,}[/bold white]""".replace(',', '.')
+    
+    # Destaques
+    stats_destaques = f"""[yellow]🏆 Mais Popular:[/yellow]
+  [bold cyan]{mais_popular['nome']}[/bold cyan]
+  [yellow]{mais_popular['estrelas']:,} ⭐[/yellow]
+
+[green]🔥 Mais Forks:[/green]
+  [bold cyan]{mais_forks['nome']}[/bold cyan]
+  [green]{mais_forks['forks']:,} 🔀[/green]
+
+[blue]🆕 Mais Recente:[/blue]
+  [bold cyan]{mais_recente['nome']}[/bold cyan]
+  [blue]{mais_recente['data_criacao'][:10]}[/blue]""".replace(',', '.')
+    
+    # Criar painéis
+    painel_geral = Panel(
+        stats_geral,
+        title="[bold cyan]📊 ESTATÍSTICAS GERAIS[/bold cyan]",
+        border_style="cyan",
+        padding=(1, 2)
+    )
+    
+    painel_destaques = Panel(
+        stats_destaques,
+        title="[bold yellow]🌟 DESTAQUES[/bold yellow]",
+        border_style="yellow",
+        padding=(1, 2)
+    )
+    
+    # Exibir painéis lado a lado
+    console.print()
+    console.print(Columns([painel_geral, painel_destaques], equal=True, expand=True))
+    console.print()
+
+
+def exibir_repositorios_tabela(repositorios: List[Dict[str, Any]], titulo: str = "🔍 Repositórios Encontrados", 
+                                mostrar_dashboard: bool = True) -> None:
     """Exibe repositórios em uma tabela formatada.
     
     Args:
         repositorios: Lista de repositórios.
         titulo: Título da tabela.
+        mostrar_dashboard: Se deve exibir o dashboard de estatísticas.
     """
     if not repositorios:
         console.print("[yellow]⚠️  Nenhum repositório para exibir.[/yellow]")
@@ -219,17 +292,10 @@ def exibir_repositorios_tabela(repositorios: List[Dict[str, Any]], titulo: str =
     # Exibir tabela
     console.print()
     console.print(table)
-    console.print()
     
-    # Exibir resumo
-    total = len(repositorios)
-    total_estrelas = sum(r['estrelas'] for r in repositorios)
-    media_estrelas = total_estrelas // total if total > 0 else 0
-    
-    resumo = f"[cyan]Total:[/cyan] {total} repositórios | "
-    resumo += f"[yellow]Média de estrelas:[/yellow] {media_estrelas:,}".replace(',', '.')
-    
-    console.print(Panel(resumo, border_style="green", padding=(0, 2)))
+    # Exibir dashboard se solicitado
+    if mostrar_dashboard:
+        exibir_dashboard_estatisticas(repositorios)
 
 def filtrar_por_data(repositorios: List[Dict[str, Any]], dias: Optional[int] = None) -> List[Dict[str, Any]]:
     """Filtra repositórios criados nos últimos X dias.

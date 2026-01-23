@@ -2,6 +2,59 @@
 
 Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
+## [2.4.0] - 2026-01-23
+
+### ✨ Novas Funcionalidades
+
+#### 📊 Dashboard de Estatísticas
+- **Dashboard automático**: Exibido após a tabela de repositórios
+  - **Estatísticas Gerais**: Painel com métricas agregadas
+    - Total de repositórios encontrados
+    - Total de estrelas acumuladas
+    - Total de forks acumulados
+    - Média de estrelas por repositório
+    - Média de forks por repositório
+  - **Destaques**: Painel com repositórios notáveis
+    - 🏆 Mais Popular: Repositório com mais estrelas
+    - 🔥 Mais Forks: Repositório mais copiado
+    - 🆕 Mais Recente: Repositório criado mais recentemente
+- **Layout lado a lado**: Dois painéis exibidos horizontalmente
+- **Formatação elegante**: Números com separador de milhares
+- **Cores contextuais**: Cada métrica com cor específica
+  - Cyan para totais
+  - Yellow para estrelas
+  - Green para forks
+  - Blue para datas
+  - Magenta para médias
+
+#### 🎨 Melhorias Visuais
+- **Painéis Rich**: Uso de `Panel` e `Columns` da biblioteca Rich
+- **Emojis informativos**: Ícones para cada métrica
+- **Bordas coloridas**: Cyan para estatísticas, Yellow para destaques
+- **Espaçamento inteligente**: Padding para melhor legibilidade
+- **Informações condensadas**: Máximo de informação em espaço mínimo
+
+### 🔧 Melhorias Técnicas
+- **Função exibir_dashboard_estatisticas()**: Nova função dedicada
+- **Cálculos automáticos**: Estatísticas calculadas dinamicamente
+- **Integração com tabelas**: Dashboard exibido após tabela
+- **Parâmetro mostrar_dashboard**: Controle opcional de exibição
+- **Ordenação inteligente**: Encontra destaques automaticamente
+
+### 📚 Melhorias de UX
+- **Visão geral instantânea**: Entenda os dados em segundos
+- **Comparação facilitada**: Médias ajudam a contextualizar
+- **Destaques automáticos**: Não precisa procurar manualmente
+- **Informação completa**: Estatísticas + Tabela + Dashboard
+- **Profissionalismo**: Aparência de ferramenta analytics
+
+### 🐛 Correções
+- Formatação consistente de números grandes
+- Tratamento de listas vazias
+- Melhor alinhamento de painéis
+
+---
+
 ## [2.3.0] - 2026-01-23
 
 ### ✨ Novas Funcionalidades

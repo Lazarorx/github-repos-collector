@@ -8,7 +8,7 @@ long_description = (this_directory / "README.md").read_text(encoding='utf-8')
 
 setup(
     name='github-repos-collector',
-    version='2.3.0',
+    version='2.4.0',
     author='GitHub Repos Collector Contributors',
     author_email='',
     description='A powerful tool to collect, filter, and export GitHub repository information',
