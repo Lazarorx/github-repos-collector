@@ -2,6 +2,49 @@
 
 Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
+## [2.3.0] - 2026-01-23
+
+### ✨ Novas Funcionalidades
+
+#### 🌈 Tabelas Formatadas com Rich
+- **Exibição em tabela**: Repositórios exibidos em tabelas bonitas e legíveis
+  - Bordas arredondadas e cores vibrantes
+  - Colunas organizadas: Nº, Nome, Estrelas, Forks, Data
+  - Números formatados com separador de milhares
+  - Cores contextuais baseadas em popularidade
+- **Resumo automático**: Painel com estatísticas
+  - Total de repositórios
+  - Média de estrelas
+  - Formatação elegante
+- **Cores inteligentes**: Destaque baseado em estrelas
+  - Amarelo bold: > 50k estrelas
+  - Amarelo: > 10k estrelas
+  - Amarelo dim: < 10k estrelas
+
+#### 🎨 Melhorias Visuais
+- **Biblioteca Rich**: Interface moderna e profissional
+- **Tabelas responsivas**: Ajustam ao tamanho do terminal
+- **Emojis nas colunas**: ⭐ Estrelas, 🔀 Forks, 📅 Data
+- **Limite inteligente**: Mostra top 20 no modo interativo, todos no CLI
+
+### 🔧 Melhorias Técnicas
+- **Dependência rich>=13.7.0**: Adicionada para formatação
+- **Console global**: Instância única para output consistente
+- **Função exibir_repositorios_tabela()**: Nova função para tabelas
+- **Função legada mantida**: exibir_info_repositorio() para compatibilidade
+
+### 📚 Melhorias de UX
+- **Legibilidade 10x melhor**: Tabelas vs logs
+- **Escaneamento visual**: Fácil comparar repositórios
+- **Informações condensadas**: Mais dados em menos espaço
+- **Profissionalismo**: Aparência de ferramenta enterprise
+
+### 🐛 Correções
+- Melhor formatação de números grandes
+- Truncamento inteligente de nomes longos
+
+---
+
 ## [2.2.0] - 2026-01-23
 
 ### ✨ Novas Funcionalidades

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "github-repos-collector"
-version = "2.2.0"
+version = "2.3.0"
 description = "A powerful tool to collect, filter, and export GitHub repository information"
 readme = "README.md"
 requires-python = ">=3.7"
@@ -32,6 +32,7 @@ dependencies = [
     "requests>=2.31.0",
     "click>=8.1.7",
     "tqdm>=4.66.0",
+    "rich>=13.7.0",
 ]
 
 [project.optional-dependencies]

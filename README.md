@@ -20,7 +20,8 @@ A powerful and user-friendly tool to collect, filter, and export GitHub reposito
 - 📈 **Progress Bars** - Real-time feedback with visual progress indicators
 - ⏱️ **Time Estimates** - Know exactly how long operations will take
 - 🔔 **Rate Limit Monitoring** - Track GitHub API usage in real-time
-- 🔑 **GitHub Authentication** - 5000 req/hour with token (vs 60 without) (NEW in v2.2.0)
+- 🔑 **GitHub Authentication** - 5000 req/hour with token (vs 60 without)
+- 📋 **Formatted Tables** - Beautiful tables with Rich library (NEW in v2.3.0)
 
 ## 🚀 Quick Start
 

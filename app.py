@@ -9,10 +9,18 @@ from pathlib import Path
 from typing import List, Dict, Optional, Any, Tuple
 from tqdm import tqdm
 import time
+from rich.console import Console
+from rich.table import Table
+from rich.panel import Panel
+from rich.text import Text
+from rich import box
 
 # Configuração do logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Console Rich para output formatado
+console = Console()
 
 # Diretório para cache e exportações
 CACHE_DIR = Path("cache")
@@ -145,7 +153,7 @@ def formatar_data(data: datetime) -> str:
     return data.strftime('%Y-%m-%d %H:%M:%S')
 
 def exibir_info_repositorio(repo: Dict[str, Any]) -> None:
-    """Exibe informações formatadas de um repositório.
+    """Exibe informações formatadas de um repositório (modo legado).
     
     Args:
         repo: Dicionário contendo informações do repositório.
@@ -153,6 +161,75 @@ def exibir_info_repositorio(repo: Dict[str, Any]) -> None:
     logger.info(f"Repositório: {repo['nome']}, Estrelas: {repo['estrelas']}, Forks: {repo['forks']}")
     logger.info(f"Link: {repo['link']}")
     logger.info(f"Criado em: {repo['data_criacao']}, Atualizado em: {repo['data_atualizacao']}\n")
+
+
+def exibir_repositorios_tabela(repositorios: List[Dict[str, Any]], titulo: str = "🔍 Repositórios Encontrados") -> None:
+    """Exibe repositórios em uma tabela formatada.
+    
+    Args:
+        repositorios: Lista de repositórios.
+        titulo: Título da tabela.
+    """
+    if not repositorios:
+        console.print("[yellow]⚠️  Nenhum repositório para exibir.[/yellow]")
+        return
+    
+    # Criar tabela
+    table = Table(
+        title=titulo,
+        box=box.ROUNDED,
+        show_header=True,
+        header_style="bold cyan",
+        title_style="bold magenta",
+        border_style="blue"
+    )
+    
+    # Adicionar colunas
+    table.add_column("Nº", style="dim", width=4, justify="right")
+    table.add_column("Nome", style="cyan bold", no_wrap=False, max_width=30)
+    table.add_column("⭐ Estrelas", style="yellow", justify="right", width=12)
+    table.add_column("🔀 Forks", style="green", justify="right", width=10)
+    table.add_column("📅 Atualizado", style="blue", width=12)
+    
+    # Adicionar linhas
+    for idx, repo in enumerate(repositorios, 1):
+        # Formatar números com separador de milhares
+        estrelas = f"{repo['estrelas']:,}".replace(',', '.')
+        forks = f"{repo['forks']:,}".replace(',', '.')
+        
+        # Pegar apenas a data (sem hora)
+        data_atualizacao = repo['data_atualizacao'][:10]
+        
+        # Cor baseada em estrelas
+        if repo['estrelas'] > 50000:
+            estrelas_style = "bold yellow"
+        elif repo['estrelas'] > 10000:
+            estrelas_style = "yellow"
+        else:
+            estrelas_style = "dim yellow"
+        
+        table.add_row(
+            str(idx),
+            repo['nome'],
+            f"[{estrelas_style}]{estrelas}[/{estrelas_style}]",
+            forks,
+            data_atualizacao
+        )
+    
+    # Exibir tabela
+    console.print()
+    console.print(table)
+    console.print()
+    
+    # Exibir resumo
+    total = len(repositorios)
+    total_estrelas = sum(r['estrelas'] for r in repositorios)
+    media_estrelas = total_estrelas // total if total > 0 else 0
+    
+    resumo = f"[cyan]Total:[/cyan] {total} repositórios | "
+    resumo += f"[yellow]Média de estrelas:[/yellow] {media_estrelas:,}".replace(',', '.')
+    
+    console.print(Panel(resumo, border_style="green", padding=(0, 2)))
 
 def filtrar_por_data(repositorios: List[Dict[str, Any]], dias: Optional[int] = None) -> List[Dict[str, Any]]:
     """Filtra repositórios criados nos últimos X dias.
@@ -551,20 +628,15 @@ def menu_interativo() -> None:
     click.secho(f"✓ Total de repositórios encontrados: {len(repositorios)}", fg='green', bold=True)
     click.echo()
     
-    # Exibe informações dos repositórios
+    # Exibe repositórios em tabela formatada
     if repositorios:
-        click.secho("📋 Repositórios encontrados:", fg='cyan', bold=True)
-        click.echo()
-        for i, repo in enumerate(repositorios[:10], 1):  # Mostra apenas os 10 primeiros
-            click.secho(f"{i}. {repo['nome']}", fg='white', bold=True)
-            click.echo(f"   ⭐ {repo['estrelas']} estrelas | 🔀 {repo['forks']} forks")
-            click.echo(f"   🔗 {repo['link']}")
-            click.echo(f"   📅 Criado: {repo['data_criacao']} | Atualizado: {repo['data_atualizacao']}")
-            click.echo()
+        # Mostrar apenas os primeiros 20 no modo interativo
+        repos_exibir = repositorios[:20]
+        exibir_repositorios_tabela(repos_exibir, f"🔍 Top {len(repos_exibir)} Repositórios {linguagem}")
         
-        if len(repositorios) > 10:
-            click.secho(f"... e mais {len(repositorios) - 10} repositórios", fg='yellow')
-            click.echo()
+        if len(repositorios) > 20:
+            console.print(f"[yellow]... e mais {len(repositorios) - 20} repositórios[/yellow]")
+            console.print()
     
     # Exportação
     if exportar_opcao in [2, 4]:
@@ -658,9 +730,11 @@ def search(interativo, tipo_repositorio, ordenacao, linguagem, num_paginas, dias
         if min_estrelas:
             repositorios = filtrar_por_estrelas(repositorios, min_estrelas)
 
-        # Exibe informações dos repositórios
-        for repo in repositorios:
-            exibir_info_repositorio(repo)
+        # Exibe repositórios em tabela formatada
+        if repositorios:
+            exibir_repositorios_tabela(repositorios, f"🔍 Repositórios {linguagem}")
+        else:
+            console.print("[yellow]⚠️  Nenhum repositório encontrado com os filtros aplicados.[/yellow]")
         
         # Exporta se solicitado
         if exportar in ['csv', 'ambos']:
